@@ -20,17 +20,26 @@ class TvsViewModel extends ViewModel
 
     public function popularTv()
     {
-        return $this->formatTv($this->popularTv);
+        return empty($this->popularTv) ? '' : $this->formatTv($this->popularTv);
     }
 
     public function onAiringTv()
     {
-        return $this->formatTv($this->onAiringTv);
+        return empty($this->onAiringTv) ? '' : $this->formatTv($this->onAiringTv);
+    }
+
+    public function pagination()
+    {
+        return collect(empty($this->popularTv) ? $this->onAiringTv : $this->popularTv)->merge([
+            'total_pages' => 500
+        ])->only([
+            'page', 'total_pages'
+        ]);
     }
 
     private function formatTv($tvs)
     {
-        return collect($tvs)->map(function ($tv) {
+        return collect($tvs['results'])->map(function ($tv) {
             $genresFormatted = collect($tv['genre_ids'])->mapWithKeys(function ($value) {
                 return [$value => $this->genres()->get($value)];
             })->flatten()->implode(', ');

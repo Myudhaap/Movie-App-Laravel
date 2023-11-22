@@ -22,10 +22,10 @@ class TvController extends Controller
     public function index()
     {
         $popularTv = Http::withToken(config('services.tmdb.token'))
-            ->get($this->apiUri . 'tv/popular')->json()['results'];
+            ->get($this->apiUri . 'tv/popular')->json();
 
         $onAiringTv = Http::withToken(config('services.tmdb.token'))
-            ->get($this->apiUri . 'tv/airing_today')->json()['results'];
+            ->get($this->apiUri . 'tv/airing_today')->json();
 
         $genresTv = Http::withToken(config('services.tmdb.token'))
             ->get($this->apiUri . 'genre/tv/list')->json()['genres'];
@@ -33,6 +33,34 @@ class TvController extends Controller
         $viewModel = new TvsViewModel($popularTv, $onAiringTv, $genresTv);
 
         return view('tv.index', $viewModel);
+    }
+
+    public function indexPopularTvs(Request $request)
+    {
+        $page = empty($request->query('page')) ? 1 : $request->query('page');
+        $popularTv = Http::withToken(config('services.tmdb.token'))
+            ->get($this->apiUri . 'tv/popular?page=' . $page)->json();
+
+        $genresTv = Http::withToken(config('services.tmdb.token'))
+            ->get($this->apiUri . 'genre/tv/list')->json()['genres'];
+
+        $viewModel = new TvsViewModel($popularTv, null, $genresTv);
+
+        return view('tv.popular-tv', $viewModel);
+    }
+
+    public function indexOnAiringTvs(Request $request)
+    {
+        $page = empty($request->query('page')) ? 1 : $request->query('page');
+        $onAiringTv = Http::withToken(config('services.tmdb.token'))
+            ->get($this->apiUri . 'tv/airing_today?page=' . $page)->json();
+
+        $genresTv = Http::withToken(config('services.tmdb.token'))
+            ->get($this->apiUri . 'genre/tv/list')->json()['genres'];
+
+        $viewModel = new TvsViewModel(null, $onAiringTv, $genresTv);
+
+        return view('tv.on-airing-tv', $viewModel);
     }
 
     /**

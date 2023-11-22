@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\ViewModels\MoviesViewModel;
 use App\ViewModels\MovieViewModel;
+use App\ViewModels\PopularMovieViewModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -22,12 +23,12 @@ class MoviesController extends Controller
     public function index()
     {
         $popularMovies = Http::withToken(config('services.tmdb.token'))
-            ->get($this->apiUri . 'movie/popular')->json()['results'];
+            ->get($this->apiUri . 'movie/popular')->json();
 
         $nowPlayingMovies = Http::withToken(
             config('services.tmdb.token')
         )
-            ->get($this->apiUri . 'movie/now_playing')->json()['results'];
+            ->get($this->apiUri . 'movie/now_playing')->json();
 
         $genres = Http::withToken(config('services.tmdb.token'))
             ->get($this->apiUri . 'genre/movie/list')->json()['genres'];
@@ -40,6 +41,34 @@ class MoviesController extends Controller
         );
 
         return view('movies.index', $viewModel);
+    }
+
+    public function indexPopularMovies(Request $request)
+    {
+        $page = empty($request->query('page')) ? '1' : $request->query('page');
+        $popularMovies = Http::withToken(config('services.tmdb.token'))
+            ->get($this->apiUri . 'movie/popular?page=' . $page)->json();
+
+        $genres = Http::withToken(config('services.tmdb.token'))
+            ->get($this->apiUri . 'genre/movie/list')->json()['genres'];
+
+        $viewModel = new MoviesViewModel($popularMovies, null, $genres);
+
+        return view('movies.popular-movie', $viewModel);
+    }
+
+    public function indexNowPlayingMovies(Request $request)
+    {
+        $page = empty($request->query('page')) ? '1' : $request->query('page');
+        $nowPlayingMovies = Http::withToken(config('services.tmdb.token'))
+            ->get($this->apiUri . 'movie/now_playing?page=' . $page)->json();
+
+        $genres = Http::withToken(config('services.tmdb.token'))
+            ->get($this->apiUri . 'genre/movie/list')->json()['genres'];
+
+        $viewModel = new MoviesViewModel(null, $nowPlayingMovies, $genres);
+
+        return view('movies.now-playing-movies', $viewModel);
     }
 
     /**

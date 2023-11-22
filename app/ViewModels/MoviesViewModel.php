@@ -20,12 +20,12 @@ class MoviesViewModel extends ViewModel
 
     public function popularMovies()
     {
-        return $this->formatMovies($this->popularMovies);
+        return empty($this->popularMovies['results']) ? '' : $this->formatMovies($this->popularMovies['results']);
     }
 
     public function nowPlayingMovies()
     {
-        return $this->formatMovies($this->nowPlayingMovies);
+        return empty($this->nowPlayingMovies['results']) ? '' : $this->formatMovies($this->nowPlayingMovies['results']);
     }
 
     public function genres()
@@ -33,6 +33,15 @@ class MoviesViewModel extends ViewModel
         return collect($this->genres)->mapWithKeys(function ($genre) {
             return [$genre['id'] => $genre['name']];
         });
+    }
+
+    public function pagination()
+    {
+        return collect(empty($this->popularMovies) ? $this->nowPlayingMovies : $this->popularMovies)->merge([
+            'total_pages' => 500
+        ])->only([
+            'page', 'total_pages'
+        ]);
     }
 
     private function formatMovies($movies)
